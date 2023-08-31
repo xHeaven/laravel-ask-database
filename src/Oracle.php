@@ -62,7 +62,7 @@ class Oracle
     {
         $tables = $this->getTables($question);
 
-        $prompt = (string) view('ask-database::prompts.query', [
+        $prompt = (string)view('ask-database::prompts.query', [
             'question' => $question,
             'tables' => $tables,
             'dialect' => $this->getDialect(),
@@ -82,7 +82,7 @@ class Oracle
     {
         if (version_compare(app()->version(), '10.0', '<')) {
             /* @phpstan-ignore-next-line */
-            return (string) DB::raw($query);
+            return (string)DB::raw($query);
         }
 
         return DB::raw($query)->getValue(DB::connection($this->connection)->getQueryGrammar());
@@ -93,7 +93,7 @@ class Oracle
      */
     protected function ensureQueryIsSafe(string $query): void
     {
-        if (! config('ask-database.strict_mode')) {
+        if (!config('ask-database.strict_mode')) {
             return;
         }
 
@@ -115,6 +115,8 @@ class Oracle
     protected function getTables(string $question): array
     {
         return once(function () use ($question) {
+            DB::connection($this->connection)->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+
             $tables = DB::connection($this->connection)
                 ->getDoctrineSchemaManager()
                 ->listTables();
@@ -129,7 +131,7 @@ class Oracle
 
     protected function filterMatchingTables(string $question, array $tables): array
     {
-        $prompt = (string) view('ask-database::prompts.tables', [
+        $prompt = (string)view('ask-database::prompts.tables', [
             'question' => $question,
             'tables' => $tables,
         ]);
@@ -139,7 +141,7 @@ class Oracle
 
         $matchingTables = Str::of($matchingTablesResult)
             ->explode(',')
-            ->transform(fn (string $tableName) => strtolower(trim($tableName)));
+            ->transform(fn(string $tableName) => strtolower(trim($tableName)));
 
         return collect($tables)->filter(function ($table) use ($matchingTables) {
             return $matchingTables->contains(strtolower($table->getName()));

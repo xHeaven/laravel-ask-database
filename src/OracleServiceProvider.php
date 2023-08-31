@@ -19,9 +19,13 @@ class OracleServiceProvider extends PackageServiceProvider
     public function registeringPackage()
     {
         DB::macro('ask', function (string $question) {
+            DB::connection()->getDoctrineConnection()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+
             return $this->app->make(Oracle::class)->ask($question);
         });
         DB::macro('askForQuery', function (string $question) {
+            DB::connection()->getDoctrineConnection()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+
             return $this->app->make(Oracle::class)->getQuery($question);
         });
     }
